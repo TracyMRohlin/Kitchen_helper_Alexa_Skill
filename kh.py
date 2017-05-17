@@ -30,20 +30,26 @@ def dec_to_str(total):
     elif total == 0.75:
         return "three quarters"
     else:
-        return "0:3f".format(total)
+        if total % 1 == 0:
+            return str(int(total))
+        elif total % 0.5 == 0:
+            return "{0:.1f}".format(total)
+        else:
+            return "{0:.2f}".format(total)
 
 def str_to_dec(string):
+    tokens = string.split()
     if string == None:
         return 0
     elif string == "a":
         return 1
-    elif string == "one eighth":
+    elif tokens and tokens[-1] == "eighth":
         return 0.125
     elif string == "one quarter":
         return 0.25
-    elif "one half":
+    elif tokens and tokens[-1] == "half":
         return 0.5
-    elif string ==  "three quarters" or "three quarter":
+    elif string ==  "three quarters" or string == "three quarter":
         return 0.75
     else:
         try:
@@ -51,31 +57,46 @@ def str_to_dec(string):
         except:
             raise Exception("Unable to process that number")
 
-#@ask.intent('ImperialIntent')
-def convert_imperial(amount, from_unit, to_unit):
-    conversions = {"g":{"q":4, "p": 8, "c":16, "o":128, "t":256},
-                   "q":{"g":0.25, "p":2, "c": 4, "o":32, "t":64},
-                   "p":{"g":0.125, "q": 0.5, "c":2, "o":16, "t":32},
-                   "c":{"g":0.0625, "q":0.25, "o": 8, "t":16},
-                   "o":{"g":0.0078125, "q":0.03125, "c":0.125, "t":2},
-                   "t":{"o": 0.5}
+@ask.intent('ImperialIntent')
+def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
+    conversions = {"ga":{"qu":4, "pi": 8, "cu":16, "ou":128, "ta":256},
+                   "qu":{"ga":0.25, "pi":2, "cu": 4, "ou":32, "ta":64},
+                   "pi":{"ga":0.125, "qu": 0.5, "cu":2, "ou":16, "ta":32},
+                   "cu":{"ga":0.0625, "qu":0.25, "ou": 8, "ta":16},
+                   "ou":{"ga":0.0078125, "qu":0.03125, "cu":0.125, "ta":2},
+                   "ta":{"ou": 0.5}
                    }
     quantity = str_to_dec(whole_num) + str_to_dec(fraction)
-    if from_unit in conversions and to_unit in conversions[to_unit]:
-        total = quantity * conversions[from_unit[0]][to_unit[0]]
-        total = dec_to_str(round(total * 8) / 8)
-        verb = "are" if total > 1 else "is"
-        return statement("There {0} {1} {2} in {3} {4}".format(verb, total, to_unit, amount, from_unit))
-    elif from_unit[:2] == "ta" and to_unit == "te":
-        total = dec_to_str(round((quantity * 8 * 3)) / 8)
-        verb = "are" if total > 1 else "is"
-        return statement("There {0} {1} {2} in {3} (4)".format(verb, total, to_unit, amount, from_unit))
-    elif from_unit[:2] == "te" and to_unit == "ta":
-        total = dec_to_str(round((quantity * 8 / 3.0)) / 8)
-        verb = "are" if total > 1 else "is"
-        return statement("There {0} {1} {2} in {3} (4)".format(verb, total, to_unit, amount, from_unit))
+    verb = ""
+    total = 0
+    unit_from = from_unit[:2]
+    unit_to = to_unit[:2]
+    try:
+        if unit_from in conversions and unit_to in conversions[unit_from]:
+            total = quantity * conversions[unit_from][unit_to]
+            total = round(total * 8) / 8
+            verb = "are" if total > 1 else "is"
+        elif unit_from == "ta" and unit_to == "te":
+            total = round((quantity * 8 * 3)) / 8
+            verb = "are" if total > 1 else "is"
+        elif unit_from == "te" and unit_to == "ta":
+            total = round((quantity * 8 / 3.0)) / 8
+            verb = "are" if total > 1 else "is"
+    except:
+        raise Exception("I'm sorry I did not understand.")
+
+
+    if total == 0 and verb == "":
+        speech_text = "Sorry, I didn't understand"
     else:
-        return statement("I'm sorry I did not understand.")
+        if quantity < 1:
+            orig_unit = from_unit[:-1] if from_unit[-1] == "s" else from_unit
+            unit_text = "of a " + orig_unit
+        else:
+            unit_text = from_unit
+        speech_text ="There {0} {1} {2} in {3} {4}".format(verb, dec_to_str(total), to_unit, dec_to_str(quantity), unit_text)
+
+    return statement(speech_text)
 
 
 # TODO Ingredient substitutions
@@ -89,36 +110,41 @@ def juice(fruit, num):
         factor = 2
     else:
         factor = 4
-
-    tbs = num * factor
-    tsps = tbs * 3
+    amount = str_to_dec(num)
+    tbs = dec_to_str(amount * factor)
+    tsps = dec_to_str(amount * factor * 3)
     speech_text = "There are {0} tablespoons or {1} teaspoons of juice in {2} {3}".format(tbs, tsps, num, fruit)
     return statement(speech_text)
 
-@ask.intent('ZestIntent', convert={"num": int}, default={"num_fruit":1})
-def zest(fruit_type, num_fruit):
-    if fruit_type == "lemons" or fruit_type == "lemon":
+@ask.intent('ZestIntent', default={"num":"1"})
+def zest(fruit, num):
+    if fruit == "lemons" or fruit == "lemon":
         factor = 3
-    elif fruit_type == "limes" or fruit_type == "lime":
+    elif fruit == "limes" or fruit == "lime":
         factor = 2
     else:
         factor = 6
-
-    tsps = factor * num_fruit
-    tbs = dec_to_str(convert_imperial(tsps, "table", "tea"))
-    speech_text = "There are {0} teaspoons or {1} tablespoons of zest in {2} {3}".format(tsps, tbs, num_fruit, fruit)
+    amount = str_to_dec(num)
+    tsps = dec_to_str(factor * amount)
+    tbs = dec_to_str(round((factor*amount)/3.0, 1))
+    speech_text = "There are {0} teaspoons or {1} tablespoons of zest in {2} {3}".format(tsps, tbs, num, fruit)
     return statement(speech_text)
 
     # dried to fresh herb conversion
 
+def herb_statement(verb, total, unit):
+    if total == 0:
+        amount_text = "a pinch of"
+    else:
+       amount_text = verb + " " + dec_to_str(total) + " " +  unit
+    return amount_text
+
+
 @ask.intent("HerbIntent", default={'num': 'a'})
 def herb(num, orig_unit):
-    verb = ""
-    unit = ""
-    total = 0
-    num = str_to_dec(num)
-    if orig_unit == "cup" or "cups":                                 # if asking for dried in a cup
-        tbs = 16 * num
+    amount = str_to_dec(num)
+    if orig_unit == "cup" or orig_unit == "cups":                                 # if asking for dried in a cup
+        tbs = 16 * amount
         total = tbs * 1/3.0
         total = round(total * 2) / 2
         if total >= 16:
@@ -128,25 +154,21 @@ def herb(num, orig_unit):
         else:
             unit = "tablespoons" if total > 1 else "tablespoon"
             verb = "are" if total > 1 else "is"
-        amount_text = verb + str(total) + unit
-    elif orig_unit == "tablespoon" or "tablespoons":                # if asking for dried in a tablespoon
-        total = num * 1.0/3.0
+    elif orig_unit == "tablespoon" or orig_unit == "tablespoons":                # if asking for dried in a tablespoon
+        total = amount * 1.0/3.0
         total = round(total * 4) / 4                            # want # of tsps by the quarter
         unit = "teaspoons" if total > 1 else "teaspoon"         # (get more granular with smaller units)
         verb = "are" if total > 1 else "is"
-        amount_text = verb + str(total) + unit
     else:                                                       # if asking for dried in a tsp
-        total = num * 1/3.0
+        total = amount * 1/3.0
         total = round(total * 8) / 8                            # want number of tsps by the eighth
-        if total == 0:
-            amount_text = "a pinch of "
-        else:
-            unit = "teaspoons" if total > 1 else "teaspoon"
-            verb = "are" if total > 1 else "is"
-            amount_text = verb + str(total) + unit
-    return statement("There " + amount_text + "dried herbs in " + str(num) + " " + orig_unit + "of fresh herbs")
+        unit = "teaspoons" if total > 1 else "teaspoon"
+        verb = "are" if total > 1 else "is"
 
+    amount_text = herb_statement(verb, total, unit)
 
+    speech_text = "There {0} dried herbs in {1} {2} of fresh herbs".format(amount_text, dec_to_str(num), orig_unit)
+    return statement(speech_text)
 
 
 
@@ -167,6 +189,7 @@ def stop():
 @ask.session_ended
 def session_ended():
     return "{}", 200
+
 
 
 if __name__ == '__main__':
