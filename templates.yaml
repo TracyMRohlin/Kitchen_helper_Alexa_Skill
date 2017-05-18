@@ -1,0 +1,11 @@
+# multiple messages per template
+# welcome: [
+#     "Kitchen Helper, at your service. What can I do you for?",
+#     "Kitchen Helper, that's my name! Don't wear it out. What's up?",
+#     "I'm the Kitchen Helper! How can I help you?",
+#     "DESTROY ALL HUMANS. Just kidding, it's Kitchen Helper. What can I do for you?",
+#     "Welcome to the Kitchen Helper. What can I help you with?"
+# ]
+# single message per template
+welcome: "Kitchen Helper, at your service. What can I do you for?"
+reprompt: "You can ask to convert one unit to another, or ask how much juice is in a lemon, lime, or orange."

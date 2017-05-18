@@ -1,22 +1,23 @@
+import logging
 import os
-from flask import Flask
-from flask_ask import Ask, statement, question, convert_errors
+from flask import Flask, render_template
+from flask_ask import Ask, statement, question, session, convert_errors
 
 app = Flask(__name__)
-ask = Ask(app, "/")
+ask = Ask(app, "/", None, "templates.yaml")
+logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
 @ask.launch
 def launch():
-    speech_text = "Hello, welcome to the kitchen helper.  What can I help you with today?"
-    reprompt_text = "You can ask to convert one unit to another, or ask how much juice is in a lemon, lime, or orange."
-    return question(speech_text).reprompt(reprompt_text)
+    welcome_msg = render_template('welcome')
+    reprompt_msg = render_template('reprompt')
+    return question(welcome_msg).reprompt(reprompt_msg)
 
 # TODO Recipe loading?
 
     # Include steps?
     # Directions to read faster/slower
     # Quantity?
-
 
 # TODO Unit Conversions
 
@@ -195,7 +196,8 @@ def stop():
 
 @ask.session_ended
 def session_ended():
-    return "{}", 200
+    return statement("BOOOOO")
+    # return "{}", 200
 
 
 
