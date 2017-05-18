@@ -21,6 +21,7 @@ def launch():
 # TODO Unit Conversions
 
 def dec_to_str(total):
+    """Converts decimals to strings for more natural speech."""
     if total == 0.125:
         return "one eighth"
     elif total == 0.25:
@@ -38,10 +39,11 @@ def dec_to_str(total):
             return "{0:.2f}".format(total)
 
 def str_to_dec(string):
+    """Converts fractions in the form of strings to decimals """
     tokens = string.split()
     if string == None:
         return 0
-    elif string == "a":
+    elif string == "a" or string == "an" or string == "the":
         return 1
     elif tokens and tokens[-1] == "eighth":
         return 0.125
@@ -59,6 +61,7 @@ def str_to_dec(string):
 
 @ask.intent('ImperialIntent')
 def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
+    """Converts from one unit to another unit in the imperial system."""
     conversions = {"ga":{"qu":4, "pi": 8, "cu":16, "ou":128, "ta":256},
                    "qu":{"ga":0.25, "pi":2, "cu": 4, "ou":32, "ta":64},
                    "pi":{"ga":0.125, "qu": 0.5, "cu":2, "ou":16, "ta":32},
@@ -104,6 +107,7 @@ def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
 
 @ask.intent('JuiceIntent', convert={"num": int}, default={"num":1})
 def juice(fruit, num):
+    """Explains how much juice is in a piece of fruit."""
     if fruit == "lemons" or fruit == "lemon":
         factor = 3
     elif fruit == "limes" or fruit == "lime":
@@ -118,6 +122,7 @@ def juice(fruit, num):
 
 @ask.intent('ZestIntent', default={"num":"1"})
 def zest(fruit, num):
+    """Explains how much zest is in a fruit"""
     if fruit == "lemons" or fruit == "lemon":
         factor = 3
     elif fruit == "limes" or fruit == "lime":
@@ -130,9 +135,10 @@ def zest(fruit, num):
     speech_text = "There are {0} teaspoons or {1} tablespoons of zest in {2} {3}".format(tsps, tbs, num, fruit)
     return statement(speech_text)
 
-    # dried to fresh herb conversion
+# dried to fresh herb conversion
 
 def herb_statement(verb, total, unit):
+    """"Returns the correct amount of herb"""
     if total == 0:
         amount_text = "a pinch of"
     else:
@@ -142,6 +148,7 @@ def herb_statement(verb, total, unit):
 
 @ask.intent("HerbIntent", default={'num': 'a'})
 def herb(num, orig_unit):
+    """Converts fresh herb to dried herb"""
     amount = str_to_dec(num)
     if orig_unit == "cup" or orig_unit == "cups":                                 # if asking for dried in a cup
         tbs = 16 * amount
