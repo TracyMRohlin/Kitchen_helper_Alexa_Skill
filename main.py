@@ -2,6 +2,7 @@ import logging
 import os
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session, convert_errors
+from pronunciation import dec_to_str, str_to_dec
 
 app = Flask(__name__)
 ask = Ask(app, "/", None, "templates.yaml")
@@ -9,9 +10,9 @@ logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
 @ask.launch
 def launch():
-    welcome_msg = render_template('welcome')
-    reprompt_msg = render_template('reprompt')
-    return question(welcome_msg).reprompt(reprompt_msg)
+    hello_msg = render_template('hello')
+    reprompt_msg = render_template('hello_reprompt')
+    return question(hello_msg).reprompt(reprompt_msg)
 
 # TODO Recipe loading?
 
@@ -21,44 +22,23 @@ def launch():
 
 # TODO Unit Conversions
 
-def dec_to_str(total):
-    """Converts decimals to strings for more natural speech."""
-    if total == 0.125:
-        return "one eighth"
-    elif total == 0.25:
-        return "one quarter"
-    elif total == 0.5:
-        return "one half"
-    elif total == 0.75:
-        return "three quarters"
-    else:
-        if total % 1 == 0:
-            return str(int(total))
-        elif total % 0.5 == 0:
-            return "{0:.1f}".format(total)
-        else:
-            return "{0:.2f}".format(total)
+@ask.intent("ThanksIntent")
+def welcome():
+    welcome_msg = render_template('welcome')
+    return statement(welcome_msg)
 
-def str_to_dec(string):
-    """Converts fractions in the form of strings to decimals """
-    tokens = string.split()
-    if string == None:
-        return 0
-    elif string == "a" or string == "an" or string == "the":
-        return 1
-    elif tokens and tokens[-1] == "eighth":
-        return 0.125
-    elif string == "one quarter":
-        return 0.25
-    elif tokens and tokens[-1] == "half":
-        return 0.5
-    elif string ==  "three quarters" or string == "three quarter":
-        return 0.75
+@ask.intent("LoveIntent")
+def love():
+    love_msg = render_template('love')
+    return statement(love_msg)
+
+def convert_temperature(temperature, target_unit):
+    if target_unit == "celsius":
+        return statement("TO-DO")
+    elif target_unit == "fahrenheit":
+        return statement("TO-DO")
     else:
-        try:
-            return float(string)
-        except:
-            raise Exception("Unable to process that number")
+        return statement("TO-DO")
 
 @ask.intent('ImperialIntent')
 def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
