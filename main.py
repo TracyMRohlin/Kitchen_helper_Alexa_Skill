@@ -86,7 +86,7 @@ def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
 # TODO Ingredient substitutions
 
 
-@ask.intent('JuiceIntent', convert={"num": int}, default={"num":1})
+@ask.intent('JuiceIntent', default={"num":"a"})
 def juice(fruit, num):
     """Explains how much juice is in a piece of fruit."""
     if fruit == "lemons" or fruit == "lemon":
@@ -127,7 +127,7 @@ def herb_statement(verb, total, unit):
     return amount_text
 
 
-@ask.intent("HerbIntent", default={'num': 'a'})
+@ask.intent("HerbIntent", default={'num': 'a'}, mapping={"herb_unit":"orig_unit"})
 def herb(num, orig_unit):
     """Converts fresh herb to dried herb"""
     amount = str_to_dec(num)
