@@ -127,35 +127,31 @@ def herb_statement(verb, total, unit):
     return amount_text
 
 
-@ask.intent("HerbIntent", default={'num': 'a'}, mapping={"herb_unit":"orig_unit"})
+@ask.intent("HerbIntent", default={'num': 'a'}, mapping={"orig_unit":"herb_unit"})
 def herb(num, orig_unit):
     """Converts fresh herb to dried herb"""
     amount = str_to_dec(num)
     if orig_unit == "cup" or orig_unit == "cups":                                 # if asking for dried in a cup
-        tbs = 16 * amount
-        total = tbs * 1/3.0
-        total = round(total * 2) / 2
-        if total >= 16:
-            cups = round(total / 16 * 8)/ 8
-            unit = "cups" if cups > 1 else "cup"
-            verb = "are" if cups > 1 else "is"
-        else:
+        total = 16 * amount                                     # find how many tablespoons in that cup
+        if total % 3 == 0:
+            total = total / 3.0
             unit = "tablespoons" if total > 1 else "tablespoon"
             verb = "are" if total > 1 else "is"
+        else:
+            unit = "teaspoons" if total > 1 else "teaspoon"
+            verb = "are" if total > 1 else "is"
     elif orig_unit == "tablespoon" or orig_unit == "tablespoons":                # if asking for dried in a tablespoon
-        total = amount * 1.0/3.0
-        total = round(total * 4) / 4                            # want # of tsps by the quarter
+        total = amount                                          # one to one ratio for dried herbs
         unit = "teaspoons" if total > 1 else "teaspoon"         # (get more granular with smaller units)
         verb = "are" if total > 1 else "is"
     else:                                                       # if asking for dried in a tsp
-        total = amount * 1/3.0
-        total = round(total * 8) / 8                            # want number of tsps by the eighth
+        total = round((amount * 0.33) * 8) / 8                  # as a general rule 1:3 ratio for dried to fresh
         unit = "teaspoons" if total > 1 else "teaspoon"
         verb = "are" if total > 1 else "is"
 
     amount_text = herb_statement(verb, total, unit)
 
-    speech_text = "There {0} dried herbs in {1} {2} of fresh herbs".format(amount_text, dec_to_str(num), orig_unit)
+    speech_text = "There {0} dried herbs in {1} {2} of fresh herbs".format(amount_text, num, orig_unit)
     return statement(speech_text)
 
 
