@@ -40,8 +40,8 @@ def convert_temperature(temperature, target_unit):
     else:
         return statement("TO-DO")
 
-@ask.intent('ImperialIntent')
-def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
+@ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
+def convert_imperial(from_unit, to_unit, whole_num, fraction):
     """Converts from one unit to another unit in the imperial system."""
     conversions = {"ga":{"qu":4, "pi": 8, "cu":16, "ou":128, "ta":256},
                    "qu":{"ga":0.25, "pi":2, "cu": 4, "ou":32, "ta":64},
@@ -59,15 +59,23 @@ def convert_imperial(from_unit, to_unit, fraction="0", whole_num="0"):
         if unit_from in conversions and unit_to in conversions[unit_from]:
             total = quantity * conversions[unit_from][unit_to]
             total = round(total * 8) / 8
-            verb = "are" if total > 1 else "is"
+            if total > 1:
+                verb = "are"
+                to_unit += "s" if to_unit[-1] != "s" else to_unit
         elif unit_from == "ta" and unit_to == "te":
             total = round((quantity * 8 * 3)) / 8
-            verb = "are" if total > 1 else "is"
+            if total > 1:
+                verb = "are"
+                to_unit += "s" if to_unit[-1] != "s" else to_unit
         elif unit_from == "te" and unit_to == "ta":
             total = round((quantity * 8 / 3.0)) / 8
-            verb = "are" if total > 1 else "is"
-    except:
-        raise Exception("I'm sorry I did not understand.")
+            if total > 1:
+                verb = "are"
+                to_unit += "s" if to_unit[-1] != "s" else to_unit # repetitive code is repetitive but *shrug*
+        else:
+            return statement("That unit cannot be converted to the one you wish.")
+    except Exception as e:
+        print(e)
 
 
     if total == 0 and verb == "":
@@ -131,7 +139,7 @@ def herb_statement(verb, total, unit):
 def herb(num, orig_unit):
     """Converts fresh herb to dried herb"""
     amount = str_to_dec(num)
-    if orig_unit == "cup" or orig_unit == "cups":                                 # if asking for dried in a cup
+    if orig_unit[:2] == "cu":                                 # if asking for dried in a cup
         total = 16 * amount                                     # find how many tablespoons in that cup
         if total % 3 == 0:
             total = total / 3.0
@@ -140,14 +148,16 @@ def herb(num, orig_unit):
         else:
             unit = "teaspoons" if total > 1 else "teaspoon"
             verb = "are" if total > 1 else "is"
-    elif orig_unit == "tablespoon" or orig_unit == "tablespoons":                # if asking for dried in a tablespoon
+    elif orig_unit[:2] == "ta":                # if asking for dried in a tablespoon
         total = amount                                          # one to one ratio for dried herbs
         unit = "teaspoons" if total > 1 else "teaspoon"         # (get more granular with smaller units)
         verb = "are" if total > 1 else "is"
-    else:                                                       # if asking for dried in a tsp
+    elif orig_unit[:2] == "te":                                                       # if asking for dried in a tsp
         total = round((amount * 0.33) * 8) / 8                  # as a general rule 1:3 ratio for dried to fresh
         unit = "teaspoons" if total > 1 else "teaspoon"
         verb = "are" if total > 1 else "is"
+    else:
+        return statement("I'm sorry, that is not a valid unit to convert to.")
 
     amount_text = herb_statement(verb, total, unit)
 
@@ -167,13 +177,8 @@ def cancel():
     return statement("Goodbye")
 
 @ask.intent('AMAZON.HelpIntent')
-def stop():
+def help():
     return statement("This app helps you in the kitchen as you cook.")
-
-@ask.session_ended
-def session_ended():
-    return statement("BOOOOO")
-    # return "{}", 200
 
 
 
