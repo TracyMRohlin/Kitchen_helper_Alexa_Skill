@@ -1,18 +1,11 @@
-"""
-pronunciation.py
-Author: Tracy Rohlin
-
-A Python script to produce natural pronunciation of floating-point numbers.
-"""
-
 def dec_to_str(total):
     """Converts decimals to strings for more natural speech."""
     if total == 0.125:
-        return "one eighth"
+        return "an eighth"
     elif total == 0.25:
-        return "one quarter"
+        return "a quarter"
     elif total == 0.5:
-        return "one half"
+        return "a half"
     elif total == 0.75:
         return "three quarters"
     else:
@@ -46,3 +39,18 @@ def str_to_dec(string):
             return float(string)
         except:
             raise Exception("Unable to convert that number to decimal.")
+
+def speak_decimals(number):
+    fractions = [0.5, 0.25, 0.75, 0.125]
+    speech = ""
+    frac = number % 1
+    whole_num = int(number)
+    if whole_num != 0:
+        speech += str(whole_num)
+        if frac in fractions:
+            speech += " and "
+        elif frac != 0:
+            return speech + str(frac)[1:4]
+    if frac != 0:
+        speech += dec_to_str(frac)
+    return speech

@@ -2,7 +2,7 @@ import logging
 import os
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session, convert_errors
-from pronunciation import dec_to_str, str_to_dec
+from pronunciation import str_to_dec, speak_decimals
 
 app = Flask(__name__)
 ask = Ask(app, "/", None, "templates.yaml")
@@ -39,6 +39,7 @@ def convert_temperature(temperature, target_unit):
         return statement("TO-DO")
     else:
         return statement("TO-DO")
+
 
 @ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
 def convert_imperial(from_unit, to_unit, whole_num, fraction):
@@ -86,7 +87,7 @@ def convert_imperial(from_unit, to_unit, whole_num, fraction):
             unit_text = "of a " + orig_unit
         else:
             unit_text = from_unit
-        speech_text ="There {0} {1} {2} in {3} {4}".format(verb, dec_to_str(total), to_unit, dec_to_str(quantity), unit_text)
+        speech_text ="There {0} {1} {2} in {3} {4}".format(verb, speak_decimals(total), to_unit, speak_decimals(quantity), unit_text)
 
     return statement(speech_text)
 
@@ -104,8 +105,8 @@ def juice(fruit, num):
     else:
         factor = 4
     amount = str_to_dec(num)
-    tbs = dec_to_str(amount * factor)
-    tsps = dec_to_str(amount * factor * 3)
+    tbs = speak_decimals(amount * factor)
+    tsps = speak_decimals(amount * factor * 3)
     speech_text = "There are {0} tablespoons or {1} teaspoons of juice in {2} {3}".format(tbs, tsps, num, fruit)
     return statement(speech_text)
 
@@ -119,8 +120,8 @@ def zest(fruit, num):
     else:
         factor = 6
     amount = str_to_dec(num)
-    tsps = dec_to_str(factor * amount)
-    tbs = dec_to_str(round((factor*amount)/3.0, 1))
+    tsps = speak_decimals(factor * amount)
+    tbs = speak_decimals(round((factor*amount)/3.0, 1))
     speech_text = "There are {0} teaspoons or {1} tablespoons of zest in {2} {3}".format(tsps, tbs, num, fruit)
     return statement(speech_text)
 
@@ -131,7 +132,7 @@ def herb_statement(verb, total, unit):
     if total == 0:
         amount_text = "a pinch of"
     else:
-       amount_text = verb + " " + dec_to_str(total) + " " +  unit
+       amount_text = verb + " " + speak_decimals(total) + " " +  unit
     return amount_text
 
 
@@ -164,7 +165,83 @@ def herb(num, orig_unit):
     speech_text = "There {0} dried herbs in {1} {2} of fresh herbs".format(amount_text, num, orig_unit)
     return statement(speech_text)
 
+@ask.intent("RoastIntent", default={"whole_lbs":"0", "frac_lbs":"0"},
+            mapping={"beef tenderloin":"whole beef tenderloin", "pork loin":"boneless pork loin"})
+def roasting(whole_lbs, frac_lbs, meat):
+    meat_conversions = {"bone-in rib roast":{"temp":"325","min":23, "max":30},
+                        "boneless rib roast":{"temp":"325","min":39, "max":43},
+                        "eye of round":{"temp":"325", "min":20, "max":22},
+                        "beef tenderloin":{"min":45, "max":60},
+                        "half beef tenderloin":{"temp":"425", "min":35, "max":45},
+                        "turkey":{"temp":"325","min":30},
+                        "chicken":{"temp":"375", "min":20, "max":30},
+                        "duck":{"temp":"375", "min":18, "max":20},
+                        "goose":{"temp":"325", "min":20, "max":25},
+                        "pheasant":{"temp":"350", "min":30},
+                        "quail":{'temp':"425", "min":20},
+                        "leg of lamb":{"temp":"325", "min":20, "max":26},
+                        "lamb roast":{"temp":"375", "min":20, "max":30},
+                        "bone in pork loin":{"temp":"325", "min":20, "max":25},
+                        "boneless pork loin":{"temp":"325", "min":22, "max":33},
+                        "pork roast":{"temp":"325", "min":20, "max":25},
+                        "pork tenderloin":{"temp":"425", "total_min":20, "total_max":30},
+                        "bone in veal loin":{"temp":"325", "min":30, "max":34},
+                        "bone in veal roast":{"temp":"325", "min":30, "max":34},
+                        "boneless veal roast":{"temp":"325", "min":25, "max":30},
+                        "boneless veal rump":{"temp":"325", "min":25, "max":30},
+                        "boneless veal shoulder":{"temp":"325", "min":25, "max":30},
+                        }
+    amount = str_to_dec(whole_lbs) + str_to_dec(frac_lbs)
+    if meat not in meat_conversions:
+        return statement("I'm sorry, I'm not quite sure I recognize what you are trying to cook.")
 
+    if "min" in meat_conversions[meat] and "max" in meat_conversions[meat]:
+        min = meat_conversions[meat]["min"] * amount
+        max = meat_conversions[meat]["max"] * amount
+        return statement("Your {0} will take between {1} and {2} minutes to cook at {3} degrees.".format(meat,
+                                                                                                 speak_decimals(min),
+                                                                                                 speak_decimals(max),
+                                                                                                 meat_conversions[meat]["temp"]))
+    elif "min" in meat_conversions[meat]:
+        min = meat_conversions[meat]["min"] * amount
+        return statement("Your {0} will be done around {1} if set in the oven at {2} degrees".format(meat,
+                                                                                                     min,
+                                                                                                     meat_conversions[meat]["temp"]))
+    # pork tenderloin has a total min/max cooking time regardless of weight
+    else:
+        min = meat_conversions[meat]["total_min"]
+        max = meat_conversions[meat]["total_max"]
+        return statement("Your {0} will take between {1} and {2} minutes if cooked at {3} degrees.".format(meat,
+                                                                                                 speak_decimals(min),
+                                                                                                 speak_decimals(max),
+                                                                                                 meat_conversions[meat]["temp"]))
+
+# ham has weird cooking instrucitons so making a separate function
+@ask.intent("HamIntent", default={"whole_lbs":"0", "frac_lbs":"0", "bone_type":"bone in", "cooked":"fully"})
+def ham(whole_lbs, frac_lbs, bone_type, cooked):
+    amount = str_to_dec(whole_lbs) + str_to_dec(frac_lbs)
+    if bone_type == "boneless":
+        min_time, max_time = 27, 33
+    else:
+        if cooked == "fully":
+            if amount >= 14 and amount <= 16:
+                min_time, max_time = 15, 18
+            elif amount >= 7 and amount <= 8:
+                min_time, max_time = 18, 25
+            else:
+                min_time, max_time = 27, 33
+        else:
+            if amount >= 14 and amount <= 16:
+                min_time, max_time = 18, 20
+            else:
+                min_time, max_time = 22, 25
+
+    min = min_time * amount
+    max = max_time * amount
+    return statement("Your ham will take between {0} and {1} minutes to cook at 325 degrees.".format(speak_decimals(min),
+                                                                                                     speak_decimals(max)))
+
+ham("3", "one half", "bone in", "fully")
 
 
 @ask.intent('AMAZON.StopIntent')
@@ -180,7 +257,9 @@ def cancel():
 def help():
     return statement("This app helps you in the kitchen as you cook.")
 
-
+@ask.session_ended
+def session_ended():
+    return "{}", 200
 
 if __name__ == '__main__':
     if 'ASK_VERIFY_REQUESTS' in os.environ:
