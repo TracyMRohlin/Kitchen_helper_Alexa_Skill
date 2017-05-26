@@ -5,8 +5,9 @@ from flask_ask import Ask, statement, question, session, convert_errors
 from pronunciation import str_to_dec, speak_decimals
 
 app = Flask(__name__)
-ask = Ask(app, "/", None, "templates.yaml")
-logging.getLogger("flask_ask").setLevel(logging.DEBUG)
+ask = Ask(app, "/")
+# ask = Ask(app, "/", None, "templates.yaml")
+# logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
 @ask.launch
 def launch():
