@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session, convert_errors
 from pronunciation import str_to_dec, speak_decimals
+from conversion import celsius_to_fahrenheit, fahrenheit_to_celsius
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -33,14 +34,17 @@ def love():
     love_msg = render_template('love')
     return statement(love_msg)
 
-def convert_temperature(temperature, target_unit):
-    if target_unit == "celsius":
-        return statement("TO-DO")
-    elif target_unit == "fahrenheit":
-        return statement("TO-DO")
-    else:
-        return statement("TO-DO")
+@ask.intent('TemperatureIntent', default={"temperature":"0", "source_unit":"celsius", "target_unit":"fahrenheit"})
+def convert_temperature(temperature, source_unit, target_unit):
 
+    init_temp = temperature
+
+    if (source_unit.lower() == "celsius" and target_unit.lower() == "fahrenheit"):
+        # return statement("boo")
+    elif (source_unit.lower() == "fahrenheit" and target_unit.lower() == "celsius"):
+        return statement("moo")
+    else:
+        return statement(temperature + " " + source_unit + " " + target_unit)
 
 @ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
 def convert_imperial(from_unit, to_unit, whole_num, fraction):

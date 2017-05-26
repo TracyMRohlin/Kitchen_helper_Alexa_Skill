@@ -9,5 +9,6 @@
 # single message per template
 hello: "Kitchen Helper, at your service. What can I do you for?"
 hello_reprompt: "You can ask to convert one unit to another, or ask how much juice is in a lemon, lime, or orange."
-welcome: "You're welcome, dude!"
+welcome: "You're welcome!"
 love: "And I love you too, random citizen!"
+temperature: "{init_temp} degrees {source_unit} is {final_temp} degrees {target_unit}."
