@@ -34,17 +34,22 @@ def love():
     love_msg = render_template('love')
     return statement(love_msg)
 
-@ask.intent('TemperatureIntent', default={"temperature":"0", "source_unit":"celsius", "target_unit":"fahrenheit"})
-def convert_temperature(temperature, source_unit, target_unit):
+@ask.intent('TemperatureIntent', default={"whole":"0", "fraction":0, "source_unit":"celsius", "target_unit":"fahrenheit"})
+def convert_temperature(whole, fraction, source_unit, target_unit):
 
-    init_temp = temperature
+    init_temp = str_to_dec(whole) + str_to_dec(fraction)
 
     if (source_unit.lower() == "celsius" and target_unit.lower() == "fahrenheit"):
-        # return statement("boo")
+        out_temp = celsius_to_fahrenheit(init_temp)
     elif (source_unit.lower() == "fahrenheit" and target_unit.lower() == "celsius"):
-        return statement("moo")
+        out_temp = fahrenheit_to_celsius(init_temp)
     else:
-        return statement(temperature + " " + source_unit + " " + target_unit)
+        out_temp = init_temp
+
+    final_temp = speak_decimals(out_temp)
+    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(speak_decimals(init_temp), source_unit, final_temp, target_unit))
+
+
 
 @ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
 def convert_imperial(from_unit, to_unit, whole_num, fraction):
@@ -266,9 +271,9 @@ def help():
 def session_ended():
     return "{}", 200
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     if 'ASK_VERIFY_REQUESTS' in os.environ:
         verify = str(os.environ.get('ASK_VERIFY_REQUESTS', '')).lower()
         if verify == 'false':
             app.config['ASK_VERIFY_REQUESTS'] = False
-    app.run(debug=True)
+    app.run(debug=True)"""
