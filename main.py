@@ -34,10 +34,10 @@ def love():
     love_msg = render_template('love')
     return statement(love_msg)
 
-@ask.intent('TemperatureIntent', default={"whole":"0", "fraction":0, "source_unit":"celsius", "target_unit":"fahrenheit"})
-def convert_temperature(whole, fraction, source_unit, target_unit):
-
-    init_temp = str_to_dec(whole) + str_to_dec(fraction)
+@ask.intent('TemperatureIntent', default={"temperature":"0", "source_unit":"celsius", "target_unit":"fahrenheit"})
+def convert_temperature(temperature, source_unit, target_unit):
+    print(temperature)
+    init_temp = float(temperature)
 
     if (source_unit.lower() == "celsius" and target_unit.lower() == "fahrenheit"):
         out_temp = celsius_to_fahrenheit(init_temp)
@@ -47,7 +47,7 @@ def convert_temperature(whole, fraction, source_unit, target_unit):
         out_temp = init_temp
 
     final_temp = speak_decimals(out_temp)
-    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(speak_decimals(init_temp), source_unit, final_temp, target_unit))
+    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(temperature, source_unit, final_temp, target_unit))
 
 
 
@@ -72,22 +72,21 @@ def convert_imperial(from_unit, to_unit, whole_num, fraction):
             total = round(total * 8) / 8
             if total > 1:
                 verb = "are"
-                to_unit += "s" if to_unit[-1] != "s" else to_unit
+                to_unit = to_unit + "s" if to_unit[-1] != "s" else to_unit
         elif unit_from == "ta" and unit_to == "te":
             total = round((quantity * 8 * 3)) / 8
             if total > 1:
                 verb = "are"
-                to_unit += "s" if to_unit[-1] != "s" else to_unit
+                to_unit = to_unit + "s" if to_unit[-1] != "s" else to_unit
         elif unit_from == "te" and unit_to == "ta":
             total = round((quantity * 8 / 3.0)) / 8
             if total > 1:
                 verb = "are"
-                to_unit += "s" if to_unit[-1] != "s" else to_unit # repetitive code is repetitive but *shrug*
+                to_unit = to_unit +"s" if to_unit[-1] != "s" else to_unit # repetitive code is repetitive but *shrug*
         else:
             return statement("That unit cannot be converted to the one you wish.")
     except Exception as e:
         print(e)
-
 
     if total == 0 and verb == "":
         speech_text = "Sorry, I didn't understand"
@@ -98,9 +97,10 @@ def convert_imperial(from_unit, to_unit, whole_num, fraction):
         else:
             unit_text = from_unit
         speech_text ="There {0} {1} {2} in {3} {4}".format(verb, speak_decimals(total), to_unit, speak_decimals(quantity), unit_text)
-
+    print(speech_text)
     return statement(speech_text)
 
+convert_imperial("cups", "tablespoons", "2", "0")
 
 # TODO Ingredient substitutions
 
@@ -251,7 +251,6 @@ def ham(whole_lbs, frac_lbs, bone_type, cooked):
     return statement("Your ham will take between {0} and {1} minutes to cook at 325 degrees.".format(speak_decimals(min),
                                                                                                      speak_decimals(max)))
 
-ham("3", "one half", "bone in", "fully")
 
 
 @ask.intent('AMAZON.StopIntent')
@@ -271,9 +270,9 @@ def help():
 def session_ended():
     return "{}", 200
 
-"""if __name__ == '__main__':
+if __name__ == '__main__':
     if 'ASK_VERIFY_REQUESTS' in os.environ:
         verify = str(os.environ.get('ASK_VERIFY_REQUESTS', '')).lower()
         if verify == 'false':
             app.config['ASK_VERIFY_REQUESTS'] = False
-    app.run(debug=True)"""
+    app.run(debug=True)
