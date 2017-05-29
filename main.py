@@ -7,8 +7,6 @@ from conversion import celsius_to_fahrenheit, fahrenheit_to_celsius
 
 app = Flask(__name__)
 ask = Ask(app, "/")
-# ask = Ask(app, "/", None, "templates.yaml")
-# logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
 @ask.launch
 def launch():
@@ -36,7 +34,6 @@ def love():
 
 @ask.intent('TemperatureIntent', default={"temperature":"0", "source_unit":"celsius", "target_unit":"fahrenheit"})
 def convert_temperature(temperature, source_unit, target_unit):
-    print(temperature)
     init_temp = float(temperature)
 
     if (source_unit.lower() == "celsius" and target_unit.lower() == "fahrenheit"):
@@ -49,8 +46,132 @@ def convert_temperature(temperature, source_unit, target_unit):
     final_temp = speak_decimals(out_temp)
     return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(temperature, source_unit, final_temp, target_unit))
 
+ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":{"unit":"teaspoon", "amount":0.5},
+                                "ginger":{"unit":"teaspoon", "amount":0.25},
+                                "cloves":{"unit":"teaspoon", "amount":0.25}}},
+                   "arrowroot starch":{"default_unit":"teaspoon", "substitute":{"flour":{"unit":"tablespoon", "amount":1},
+                                        "cornstarch":{"unit":"teaspoon", "amount":1}}},
+                   "baking mix": {"default_unit":"cup", "substitute":{"pancake mix": {"unit": "cup", "amount": 1}}},
+                   "baking powder":{"default_unit":"teaspoon", "substitute":{"baking soda": {"unit": "teaspoon", "amount": 0.25},
+                                                                             "cream of tartar": {"unit": "teaspoon", "amount": 0.5}}},
+                   "baking soda": {"default_unit":"teaspoon", "substitute":{"baking powder": {"unit": "teaspoons", "amount": 4}}},
+                   "beer":  {"default_unit":"cup", "substitute":{"chicken broth": {"unit": "cup", "amount": 1}}},
+                   "brandy":  {"default_unit":"cup", "substitute":{"imitation brandy extract": {"unit": "teaspoon", "amount": 4},
+                                                                   "water": {"unit": "cup", "amount": 1}}},
+                   "bread crumbs":{"default_unit":"cup", "substitute":{"cracker crumbs": {"unit": "cup", "amount": 1}}},
+                   "chicken broth":{"default_unit":"cup", "substitute":{"bouilon": {"unit": "cube", "amount": 1},
+                                                                        "boiling water": {"unit": "cup", "amount": 1}}},
+                   "beef broth":{"default_unit":"cup", "substitute":{"bouilon": {"unit": "cube", "amount": 1},
+                                                                        "boiling water": {"unit": "cup", "amount": 1}}},
+                   "broth":{"default_unit":"cup", "substitute":{"bouilon": {"unit": "cube", "amount": 1},
+                                                                        "boiling water": {"unit": "cup", "amount": 1}}},
+                   "brown sugar":{"default_unit":"cup", "substitute":{"whtie sugar": {"unit": "cube", "amount": 1},
+                                                                        "molasses": {"unit": "cup", "amount": 0.25}}},
+                   "salted butter":{"default_unit":"cup", "substitute":{"margarine": {"unit": "cup", "amount": 1}}},
+                   "unsalted butter": {"default_unit":"cup", "substitute":{"shortening": {"unit": "cup", "amount": 1}}},
+                   "buttermilk": {"default_unit":"cup", "substitute":{"yogurt": {"unit": "cup", "amount": 1}}},
+                   "cheddar cheese": {"default_unit":"cup", "substitute":{"monterey jack": {"unit": "cup", "amount": 1}}},
+                   "chervil": {"default_unit":"tablespoon", "substitute":{"parsely": {"unit": "tablespoon", "amount": 1}}},
+                   "semisweet chocolate": {"default_unit":"ounce", "substitute":{"unsweetened chocolate": {"unit": "ounce", "amount": 1},
+                                                                                 "sugar": {"unit":"teaspoon", "amount":1}}},
+                   "unsweetened chocolate":{"default_unit":"ounce", "substitute":{"unsweetened cocoa": {"unit": "tablespoon", "amount": 3},
+                                                                                  "shortening":{"unit": "tablespoon", "amount": 1}}},
+                   "cocoa":{"default_unit":"cup", "substitute":{"cup": {"unit": "ounce", "amount": 4}}},
+                   "corn syrup":{"default_unit":"cup", "substitute":{"honey": {"unit": "cup", "amount": 1}}},
+                   "cottage cheese":{"default_unit":"cup", "substitute":{"ricotta cheese": {"unit": "cup", "amount": 1}}},
+                    "cracker crumbs":{"default_unit":"cup", "substitute":{"bread crumb": {"unit": "cup", "amount": 1}}},
+                    "half and half": {"default_unit":"cup", "substitute":{"milk": {"unit": "cup", "amount": 0.7/0.8},
+                                                                          "butter":{"unit":"tablespoon", "amount": 1}}},
+                    "heavy cream":{"default_unit":"cup", "substitute":{"milk": {"unit": "cup", "amount": 0.75},
+                                                                       "butter":{"unit":"cup", "amount": 0.33}}},
+                    "light cream":{"default_unit":"cup", "substitute":{"milk": {"unit": "cup", "amount": 0.75},
+                                                                       "butter":{"unit":"tablespoon", "amount": 3}}},
+                    "cream of tartar":{"default_unit":"teaspoon", "substitute":{"lemon juice": {"unit": "teaspoon", "amount": 2}}},
+                    "egg":{"default_unit":"whole", "substitute":{"mayonaise": {"unit": "tablespoon", "amount": 3}}},
+                    "evaporated milk":{"default_unit":"cup", "substitute":{"light cream": {"unit": "cup", "amount": 1}}},
+                    "bread flour":{"default_unit":"cup", "substitute":{"all purpose flour": {"unit": "cup", "amount": 1},
+                                                                       "wheat gluten":{"unit":"teaspoon", "amount":1}}},
+                    "self rising flour":{"default_unit":"cup", "substitute":{"all purpose flour": {"unit": "cup", "amount": 7.0/8},
+                                                                             "baking powder":{"unit":"teaspoon", "amount": 1.5},
+                                                                            "salt":{"unit":"teaspoon", "amount": 0.5}}},
+                    "garlic":{"default_unit":"clove", "substitute":{"garlic powder": {"unit": "teaspoon", "amount": 1/8.0}}},
+                    "gelatin":{"default_unit":"tablespoon", "substitute":{"agar agar": {"unit": "teaspoon", "amount": 2}}},
+                    "powdered ginger":{"default_unit":"teaspoon", "substitute":{"fresh ginger": {"unit": "teaspoon", "amount": 2}}},
+                    "fresh ginger":{"default_unit":"teaspoon", "substitute":{"powdered ginger": {"unit": "teaspoon", "amount": 0.5}}},
+                    "green onion":{"default_unit":"cup", "substitute":{"shallot": {"unit": "cup", "amount": 1}}},
+                    "hazelnuts":{"default_unit":"cup", "substitute":{"almonds": {"unit": "cup", "amount": 1}}},
+                    "honey":{"default_unit":"cup", "substitute":{"white sugar": {"unit": "cup", "amount": 1.25},
+                                                                 "water":{"unit":"cup", "amount":0.33}}},
+                    "hot pepper sauce":{"default_unit":"teaspoon", "substitute":{"cayenne pepper": {"unit": "teaspoon", "amount": 0.75},
+                                                                                 "vinegar":{"unit":"teaspoon", "amount": 1}}},
+                    "ketchup":{"default_unit":"cup", "substitute":{"tomato sauce": {"unit": "cup", "amount": 1},
+                                                                   "vinegar":{"unit":"teaspoon", "amount":1},
+                                                                   "sugar":{"unit":"tablespoon", "amount":1}}},
+                    "lemongrass":{"default_unit":"stalk", "substitute":{"lemon zest": {"unit": "teaspoon", "amount": 1.5}}},
+                    "lemon juice":{"default_unit":"teaspoon", "substitute":{"white wine": {"unit": "teaspoon", "amount": 1}}},
+                    "lemon zest":{"default_unit":"teaspoon", "substitute":{"lemon juice": {"unit": "tablespoon", "amount": 2}}},
+                    "lime juice":{"default_unit":"teaspoon", "substitute":{"white wine": {"unit": "teaspoon", "amount": 1}}},
+                    "lime zest":{"default_unit":"teaspoon", "substitute":{"lemon zest": {"unit": "teaspoon", "amount": 1}}},
+                    "macadamia nuts":{"default_unit":"cup", "substitute":{"almonds": {"unit": "cup", "amount": 1}}},
+                    "margarine":{"default_unit":"cup", "substitute":{"butter": {"unit": "cup", "amount": 1}}},
+                    "mayonaise":{"default_unit":"cup", "substitute":{"sour cream": {"unit": "cup", "amount": 1}}},
+                    "molasses":{"default_unit":"cup", "substitute":{"brown sugar": {"unit": "cup", "amount": 0.75},
+                                                                    "cream of tartar":{"unit":"teaspoon", "amount":1}}},
+                    "mustard":{"default_unit":"tablespoon", "substitute":{"dried mustard": {"unit": "tablespoon", "amount": 1},
+                                                                          "water":{"unit":"teaspoon", "amount":1},
+                                                                          "vinegar":{"unit":"teaspoon", "amount":1},
+                                                                          "sugar":{"unit":"teaspoon", "amount":1}}},
+                    "onion":{"default_unit":"cup", "substitute":{"onion powder": {"unit": "cup", "amount": 0.25}}},
+                    "orange zest":{"default_unit":"tablespoon", "substitute":{"orange extract": {"unit": "teaspoon", "amount": 0.5}}},
+                    "paremesan cheese":{"default_unit":"cup", "substitute":{"asiago cheese": {"unit": "cup", "amount": 1}}},
+                    "parsley":{"default_unit":"tablespoon", "substitute":{"chervil": {"unit": "tablespoon", "amount": 1}}},
+                    "pepperoni":{"default_unit":"ounce", "substitute":{"salami": {"unit": "ounce", "amount": 1}}},
+                    "raisins":{"default_unit":"cup", "substitute":{"dried cranberries": {"unit": "cup", "amount": 1}}},
+                    "white rice":{"default_unit":"cup", "substitute":{"brown rice": {"unit": "cup", "amount": 1}}},
+                    "ricotta":{"default_unit":"cup", "substitute":{"silken tofu": {"unit": "cup", "amount": 1}}},
+                    "saffron":{"default_unit":"teaspoon", "substitute":{"tumeric": {"unit": "teaspoon", "amount": 1}}},
+                    "salami":{"default_unit":"ounce", "substitute":{"pepperoni": {"unit": "ounce", "amount": 1}}},
+                    "shallots":{"default_unit":"cup", "substitute":{"onion": {"unit": "cup", "amount": 1}}},
+                    "shortening":{"default_unit":"cup", "substitute":{"butter": {"unit": "cup", "amount": 1}}},
+                    "sour cream":{"default_unit":"cup", "substitute":{"plain yogurt": {"unit": "cup", "amount": 1}}},
+                    "soy sauce":{"default_unit":"cup", "substitute":{"worcestershire sauce": {"unit": "cup", "amount": 0.5},
+                                                                     "water":{"unit":"tablespoon", "amount":2}}},
+                    "vinegar":{"default_unit":"teaspoon", "substitute":{"white wine": {"unit": "teaspoon", "amount": 2}}},
+                    "white sugar":{"default_unit":"cup", "substitute":{"confectioners sugar": {"unit": "cup", "amount": 1.25}}},
+                    "yogurt":{"default_unit":"cup", "substitute":{"sour cream": {"unit": "cup", "amount": 1}}},
+               }
+
+@ask.intent('SubstituteIntent', default={"fraction":"0", "whole_num":"1", "unit":""}, mapping={"unsalted butter": "butter",
+                                                                                    "fresh ginger":"ginger",
+                                                                                    "green onion":"scallion",
+                                                                                    "white rice":"rice",
+                                                                                    "yogurt": "plain yogurt"})
+
+def common_substitutions(whole, fraction, item, unit):
 
 
+    amount = str_to_dec(whole) + str_to_dec(fraction)
+    things_to_substitute = []
+    if item in ingredients:
+        substitution = ingredients[item]
+        if (unit != substitution["default_unit"]):  # user is asking for a weird conversion
+            amount = 1
+            unit = substitution["default_unit"]
+        for sub_ingred, ingred_data in substitution["substitute"].items():
+            amount_to_sub = speak_decimals(amount * ingred_data["amount"])
+            target_unit = ingred_data["unit"] + "s" if amount > 1 else ingred_data["unit"]
+            things_to_substitute.append("{0} {1} of {2}".format(amount_to_sub, target_unit, sub_ingred))
+        if len(things_to_substitute) > 1:
+            ingred_speech = " ".join(things_to_substitute[:-1]) + " and " + things_to_substitute[-1]
+        else:
+            ingred_speech = things_to_substitute[0]
+        speech_text = "You can substitute {0} for {1} {2} of {3}".format(ingred_speech, speak_decimals(amount), unit, item)
+        return statement(speech_text)
+
+    else:
+        return statement("Sorry, I do not recognize that ingredient you are trying to substitute.")
+
+common_substitutions("1", "0", "allspice", "teaspoon")
 @ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
 def convert_imperial(from_unit, to_unit, whole_num, fraction):
     """Converts from one unit to another unit in the imperial system."""
@@ -97,10 +218,8 @@ def convert_imperial(from_unit, to_unit, whole_num, fraction):
         else:
             unit_text = from_unit
         speech_text ="There {0} {1} {2} in {3} {4}".format(verb, speak_decimals(total), to_unit, speak_decimals(quantity), unit_text)
-    print(speech_text)
     return statement(speech_text)
 
-convert_imperial("cups", "tablespoons", "2", "0")
 
 # TODO Ingredient substitutions
 
@@ -175,10 +294,7 @@ def herb(num, orig_unit):
     speech_text = "There {0} dried herbs in {1} {2} of fresh herbs".format(amount_text, num, orig_unit)
     return statement(speech_text)
 
-@ask.intent("RoastIntent", default={"whole_lbs":"0", "frac_lbs":"0"},
-            mapping={"beef tenderloin":"whole beef tenderloin", "pork loin":"boneless pork loin"})
-def roasting(whole_lbs, frac_lbs, meat):
-    meat_conversions = {"bone-in rib roast":{"temp":"325","min":23, "max":30},
+meat_conversions = {"bone in rib roast":{"temp":"325","min":23, "max":30},
                         "boneless rib roast":{"temp":"325","min":39, "max":43},
                         "eye of round":{"temp":"325", "min":20, "max":22},
                         "beef tenderloin":{"min":45, "max":60},
@@ -201,6 +317,11 @@ def roasting(whole_lbs, frac_lbs, meat):
                         "boneless veal rump":{"temp":"325", "min":25, "max":30},
                         "boneless veal shoulder":{"temp":"325", "min":25, "max":30},
                         }
+
+@ask.intent("RoastIntent", default={"whole_lbs":"0", "frac_lbs":"0"},
+            mapping={"beef tenderloin":"whole beef tenderloin", "pork loin":"boneless pork loin"})
+def roasting(whole_lbs, frac_lbs, meat):
+
     amount = str_to_dec(whole_lbs) + str_to_dec(frac_lbs)
     if meat not in meat_conversions:
         return statement("I'm sorry, I'm not quite sure I recognize what you are trying to cook.")
@@ -270,9 +391,9 @@ def help():
 def session_ended():
     return "{}", 200
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     if 'ASK_VERIFY_REQUESTS' in os.environ:
         verify = str(os.environ.get('ASK_VERIFY_REQUESTS', '')).lower()
         if verify == 'false':
             app.config['ASK_VERIFY_REQUESTS'] = False
-    app.run(debug=True)
+    app.run(debug=True)"""
