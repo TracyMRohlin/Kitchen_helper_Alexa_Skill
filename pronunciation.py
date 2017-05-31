@@ -33,7 +33,7 @@ def str_to_dec(string):
         return 0.75
     elif u'\u2044' in string:        # alexa seems to automatically convert "one half" to "1/2", "one eighth" to "1/8", etc.
                                     # but somewhat inconsistently so keep both elif statements for fractions like one half
-        return float(string[0]) / float(string[1-1])
+        return float(string[0]) / float(string[1:-1])
     else:
         try:
             return float(string)

@@ -145,8 +145,8 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                                                                                     "fresh ginger":"ginger",
                                                                                     "green onion":"scallion",
                                                                                     "white rice":"rice",
-                                                                                    "yogurt": "plain yogurt"})
-
+                                                                                    "yogurt": "plain yogurt",
+                                                                                    "hot pepper sauce":"hot sauce"})
 def common_substitutions(whole, fraction, item, unit):
 
 
