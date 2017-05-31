@@ -25,11 +25,11 @@ def str_to_dec(string):
         return 1
     elif tokens and tokens[-1] == "eighth":
         return 0.125
-    elif string == "one quarter" or string == "a quarter":
+    elif tokens[-2:] == ["one", "quarter"] or tokens[-2:] == ["a", "quarter"]:
         return 0.25
     elif tokens and tokens[-1] == "half":
         return 0.5
-    elif string ==  "three quarters" or string == "three quarter":
+    elif tokens[-2:] == ["three", "quarter"] or tokens[-2:] == ["three", "quarter"]:
         return 0.75
     elif u'\u2044' in string:        # alexa seems to automatically convert "one half" to "1/2", "one eighth" to "1/8", etc.
                                     # but somewhat inconsistently so keep both elif statements for fractions like one half

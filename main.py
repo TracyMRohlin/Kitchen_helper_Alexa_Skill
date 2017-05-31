@@ -141,15 +141,13 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                     "yogurt":{"default_unit":"cup", "substitute":{"sour cream": {"unit": "cup", "amount": 1}}},
                }
 
-@ask.intent('SubstituteIntent', default={"fraction":"0", "whole_num":"1", "unit":""}, mapping={"unsalted butter": "butter",
+@ask.intent('SubstituteIntent', default={"fraction":"0", "whole":"1", "unit":""}, mapping={"unsalted butter": "butter",
                                                                                     "fresh ginger":"ginger",
                                                                                     "green onion":"scallion",
                                                                                     "white rice":"rice",
                                                                                     "yogurt": "plain yogurt",
                                                                                     "hot pepper sauce":"hot sauce"})
 def common_substitutions(whole, fraction, item, unit):
-
-
     amount = str_to_dec(whole) + str_to_dec(fraction)
     things_to_substitute = []
     if item in ingredients:
@@ -158,7 +156,8 @@ def common_substitutions(whole, fraction, item, unit):
             amount = 1
             unit = substitution["default_unit"]
         for sub_ingred, ingred_data in substitution["substitute"].items():
-            amount_to_sub = speak_decimals(amount * ingred_data["amount"])
+            amount = amount * ingred_data["amount"]
+            amount_to_sub = speak_decimals(amount)
             target_unit = ingred_data["unit"] + "s" if amount > 1 else ingred_data["unit"]
             things_to_substitute.append("{0} {1} of {2}".format(amount_to_sub, target_unit, sub_ingred))
         if len(things_to_substitute) > 1:
@@ -171,7 +170,6 @@ def common_substitutions(whole, fraction, item, unit):
     else:
         return statement("Sorry, I do not recognize that ingredient you are trying to substitute.")
 
-common_substitutions("1", "0", "allspice", "teaspoon")
 @ask.intent('ImperialIntent', default={"fraction":"0", "whole_num":"0"})
 def convert_imperial(from_unit, to_unit, whole_num, fraction):
     """Converts from one unit to another unit in the imperial system."""
