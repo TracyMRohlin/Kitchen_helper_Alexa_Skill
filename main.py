@@ -391,9 +391,9 @@ def help():
 def session_ended():
     return "{}", 200
 
-"""if __name__ == '__main__':
+if __name__ == '__main__':
     if 'ASK_VERIFY_REQUESTS' in os.environ:
         verify = str(os.environ.get('ASK_VERIFY_REQUESTS', '')).lower()
         if verify == 'false':
             app.config['ASK_VERIFY_REQUESTS'] = False
-    app.run(debug=True)"""
+    app.run(debug=True)
