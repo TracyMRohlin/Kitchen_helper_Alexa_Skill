@@ -69,6 +69,7 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                                                                         "molasses": {"unit": "cup", "amount": 0.25}}},
                    "salted butter":{"default_unit":"cup", "substitute":{"margarine": {"unit": "cup", "amount": 1}}},
                    "unsalted butter": {"default_unit":"cup", "substitute":{"shortening": {"unit": "cup", "amount": 1}}},
+                    "butter": {"default_unit":"cup", "substitute":{"shortening": {"unit": "cup", "amount": 1}}},
                    "buttermilk": {"default_unit":"cup", "substitute":{"yogurt": {"unit": "cup", "amount": 1}}},
                    "cheddar cheese": {"default_unit":"cup", "substitute":{"monterey jack": {"unit": "cup", "amount": 1}}},
                    "chervil": {"default_unit":"tablespoon", "substitute":{"parsely": {"unit": "tablespoon", "amount": 1}}},
@@ -98,11 +99,15 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                     "gelatin":{"default_unit":"tablespoon", "substitute":{"agar agar": {"unit": "teaspoon", "amount": 2}}},
                     "powdered ginger":{"default_unit":"teaspoon", "substitute":{"fresh ginger": {"unit": "teaspoon", "amount": 2}}},
                     "fresh ginger":{"default_unit":"teaspoon", "substitute":{"powdered ginger": {"unit": "teaspoon", "amount": 0.5}}},
+                    "ginger":{"default_unit":"teaspoon", "substitute":{"powdered ginger": {"unit": "teaspoon", "amount": 0.5}}},
                     "green onion":{"default_unit":"cup", "substitute":{"shallot": {"unit": "cup", "amount": 1}}},
+                    "scallion":{"default_unit":"cup", "substitute":{"shallot": {"unit": "cup", "amount": 1}}},
                     "hazelnuts":{"default_unit":"cup", "substitute":{"almonds": {"unit": "cup", "amount": 1}}},
                     "honey":{"default_unit":"cup", "substitute":{"white sugar": {"unit": "cup", "amount": 1.25},
                                                                  "water":{"unit":"cup", "amount":0.33}}},
                     "hot pepper sauce":{"default_unit":"teaspoon", "substitute":{"cayenne pepper": {"unit": "teaspoon", "amount": 0.75},
+                                                                                 "vinegar":{"unit":"teaspoon", "amount": 1}}},
+                "hot sauce":{"default_unit":"teaspoon", "substitute":{"cayenne pepper": {"unit": "teaspoon", "amount": 0.75},
                                                                                  "vinegar":{"unit":"teaspoon", "amount": 1}}},
                     "ketchup":{"default_unit":"cup", "substitute":{"tomato sauce": {"unit": "cup", "amount": 1},
                                                                    "vinegar":{"unit":"teaspoon", "amount":1},
@@ -128,6 +133,7 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                     "pepperoni":{"default_unit":"ounce", "substitute":{"salami": {"unit": "ounce", "amount": 1}}},
                     "raisins":{"default_unit":"cup", "substitute":{"dried cranberries": {"unit": "cup", "amount": 1}}},
                     "white rice":{"default_unit":"cup", "substitute":{"brown rice": {"unit": "cup", "amount": 1}}},
+                    "rice":{"default_unit":"cup", "substitute":{"brown rice": {"unit": "cup", "amount": 1}}},
                     "ricotta":{"default_unit":"cup", "substitute":{"silken tofu": {"unit": "cup", "amount": 1}}},
                     "saffron":{"default_unit":"teaspoon", "substitute":{"tumeric": {"unit": "teaspoon", "amount": 1}}},
                     "salami":{"default_unit":"ounce", "substitute":{"pepperoni": {"unit": "ounce", "amount": 1}}},
@@ -139,14 +145,10 @@ ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":
                     "vinegar":{"default_unit":"teaspoon", "substitute":{"white wine": {"unit": "teaspoon", "amount": 2}}},
                     "white sugar":{"default_unit":"cup", "substitute":{"confectioners sugar": {"unit": "cup", "amount": 1.25}}},
                     "yogurt":{"default_unit":"cup", "substitute":{"sour cream": {"unit": "cup", "amount": 1}}},
+                    "plain yogurt":{"default_unit":"cup", "substitute":{"sour cream": {"unit": "cup", "amount": 1}}},
                }
 
-@ask.intent('SubstituteIntent', default={"fraction":"0", "whole":"1", "unit":""}, mapping={"unsalted butter": "butter",
-                                                                                    "fresh ginger":"ginger",
-                                                                                    "green onion":"scallion",
-                                                                                    "white rice":"rice",
-                                                                                    "yogurt": "plain yogurt",
-                                                                                    "hot pepper sauce":"hot sauce"})
+@ask.intent('SubstituteIntent', default={"fraction":"0", "whole":"1", "unit":""})
 def common_substitutions(whole, fraction, item, unit):
     amount = str_to_dec(whole) + str_to_dec(fraction)
     things_to_substitute = []
@@ -296,6 +298,7 @@ meat_conversions = {"bone in rib roast":{"temp":"325","min":23, "max":30},
                         "boneless rib roast":{"temp":"325","min":39, "max":43},
                         "eye of round":{"temp":"325", "min":20, "max":22},
                         "beef tenderloin":{"min":45, "max":60},
+                        "whole beef tenderloin":{"min":45, "max":60},
                         "half beef tenderloin":{"temp":"425", "min":35, "max":45},
                         "turkey":{"temp":"325","min":30},
                         "chicken":{"temp":"375", "min":20, "max":30},
@@ -307,6 +310,7 @@ meat_conversions = {"bone in rib roast":{"temp":"325","min":23, "max":30},
                         "lamb roast":{"temp":"375", "min":20, "max":30},
                         "bone in pork loin":{"temp":"325", "min":20, "max":25},
                         "boneless pork loin":{"temp":"325", "min":22, "max":33},
+                        "pork loin":{"temp":"325", "min":22, "max":33},
                         "pork roast":{"temp":"325", "min":20, "max":25},
                         "pork tenderloin":{"temp":"425", "total_min":20, "total_max":30},
                         "bone in veal loin":{"temp":"325", "min":30, "max":34},
@@ -316,8 +320,7 @@ meat_conversions = {"bone in rib roast":{"temp":"325","min":23, "max":30},
                         "boneless veal shoulder":{"temp":"325", "min":25, "max":30},
                         }
 
-@ask.intent("RoastIntent", default={"whole_lbs":"0", "frac_lbs":"0"},
-            mapping={"beef tenderloin":"whole beef tenderloin", "pork loin":"boneless pork loin"})
+@ask.intent("RoastIntent", default={"whole_lbs":"0", "frac_lbs":"0"})
 def roasting(whole_lbs, frac_lbs, meat):
 
     amount = str_to_dec(whole_lbs) + str_to_dec(frac_lbs)
