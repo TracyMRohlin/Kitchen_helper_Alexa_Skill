@@ -50,4 +50,4 @@ Note: You must accept the Terms & Conditions of EchoSim.io in order to use it. I
 
 ### Contact Us
 
-If you have any questions, please feel free to contact us at travin at uw dot edu.
+If you have any questions, please feel free to contact us at tracy dot rohlin at gmail dot com or travin at uw dot edu.
