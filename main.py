@@ -32,19 +32,19 @@ def love():
     love_msg = render_template('love')
     return statement(love_msg)
 
-@ask.intent('TemperatureIntent', default={"temperature":"0", "source_unit":"celsius", "target_unit":"fahrenheit"})
-def convert_temperature(temperature, source_unit, target_unit):
+@ask.intent('TemperatureIntent', default={"temperature":"0", "source_temperature_unit":"celsius", "target_temperature_unit":"fahrenheit"})
+def convert_temperature(temperature, source_temperature_unit, target_temperature_unit):
     init_temp = float(temperature)
 
-    if (source_unit.lower() == "celsius" and target_unit.lower() == "fahrenheit"):
+    if (source_temperature_unit.lower() == "celsius" and target_temperature_unit.lower() == "fahrenheit"):
         out_temp = celsius_to_fahrenheit(init_temp)
-    elif (source_unit.lower() == "fahrenheit" and target_unit.lower() == "celsius"):
+    elif (source_temperature_unit.lower() == "fahrenheit" and target_temperature_unit.lower() == "celsius"):
         out_temp = fahrenheit_to_celsius(init_temp)
     else:
         out_temp = init_temp
 
     final_temp = speak_decimals(out_temp)
-    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(temperature, source_unit, final_temp, target_unit))
+    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(temperature, source_temperature_unit, final_temp, target_temperature_unit))
 
 ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":{"unit":"teaspoon", "amount":0.5},
                                 "ginger":{"unit":"teaspoon", "amount":0.25},
