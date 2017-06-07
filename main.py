@@ -46,19 +46,22 @@ def convert_temperature(temperature, source_temperature_unit, target_temperature
     final_temp = speak_decimals(out_temp)
     return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(temperature, source_temperature_unit, final_temp, target_temperature_unit))
 
-@ask.intent('WeightIntent', default={"weight"})
+@ask.intent('WeightIntent', default={"weight":"0", "source_weight_unit":"kilograms", "target_weight_unit":"pounds"})
 def convert_weight(weight, source_weight_unit, target_weight_unit):
     init_wt = float(weight)
 
-    if (source_weight_unit.lower() == "kilograms" and target_weight_unit.lower() == "pounds"):
+    kilogram_set = ("kilogram", "kilograms")
+    pound_set = ("pound", "pounds")
+
+    if ((source_weight_unit.lower() == "kilograms" or source_weight_unit.lower() == "kilogram") and (target_weight_unit.lower() == "pounds" or target_weight_unit.lower() == "pound")):
         out_wt = kilograms_to_pounds(init_wt)
-    elif (source_weight_unit.lower() == "pounds" and target_weight_unit.lower() == "kilograms"):
+    elif ((source_weight_unit.lower() == "pounds" or source_weight_unit.lower() == "pound") and (target_weight_unit.lower() == "kilograms" or target_weight_unit.lower() == "kilogram")):
         out_wt = pounds_to_kilograms(init_wt)
     else:
         out_wt = init_wt
 
     final_wt = speak_decimals(out_wt)
-    return statement("{0} degrees {1} is equal to {2} degrees in {3}.".format(weight, source_weight_unit, final_wt, target_weight_unit))
+    return statement("{0} {1} is equal to {2} {3}.".format(weight, source_weight_unit, final_wt, target_weight_unit))
 
 ingredients = {"allspice": {"default_unit":"teaspoon", "substitute":{"cinnamon":{"unit":"teaspoon", "amount":0.5},
                                 "ginger":{"unit":"teaspoon", "amount":0.25},

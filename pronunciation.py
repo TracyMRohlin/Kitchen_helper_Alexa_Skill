@@ -45,12 +45,16 @@ def speak_decimals(number):
     speech = ""
     frac = number % 1
     whole_num = int(number)
-    if whole_num != 0:
-        speech += str(whole_num)
-        if frac in fractions:
-            speech += " and "
-        elif frac != 0:
-            return speech + str(frac)[1:4]
-    if frac != 0:
-        speech += dec_to_str(frac)
+    if number == 0:
+        speech = str(whole_num)
+    else:
+        if whole_num != 0:
+            speech += str(whole_num)
+            if frac in fractions:
+                speech += " and "
+            elif frac != 0:
+                return speech + str(frac)[1:4]
+        if frac != 0:
+            speech += dec_to_str(frac)
+
     return speech
